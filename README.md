@@ -1,4 +1,4 @@
-# toy scheme interpreter
+# Tiny Scheme: a toy scheme interpreter
 
 learning Ocaml by building a toy scheme interpreter
 
