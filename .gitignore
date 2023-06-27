@@ -1,1 +1,9 @@
 .vscode
+.DS_Store
+__pycache__
+abstract_turtle
+editor
+images
+ok
+proj04.ok
+tests
