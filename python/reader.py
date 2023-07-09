@@ -4,17 +4,18 @@ from typing import List
 # atom -> List[string]
 # [atom1, atom2, atom3]
 
+
 # iterative implementation using stack
 def reader(tokens: List[str]) -> List[str]:
     if len(tokens) == 0:
         return []
-    
+
     if len(tokens) == 1:
         raise Exception("unmatched brackets")
 
     if tokens[0] != "[":
         raise Exception("expect [")
-    
+
     if tokens[-1] != "]":
         raise Exception("expect ]")
 
@@ -22,7 +23,7 @@ def reader(tokens: List[str]) -> List[str]:
     tokens = tokens[1:-1]
     if len(tokens) == 0:
         return []
-    
+
     result = []
     i = 0
     open_bracket = 0
@@ -37,17 +38,21 @@ def reader(tokens: List[str]) -> List[str]:
         elif token == "]":
             open_bracket -= 1
             if open_bracket == 0 and open_index != -1:
-                nested_read = reader(tokens[open_index:i+1])
+                nested_read = reader(tokens[open_index : i + 1])
                 result.append(nested_read)
                 open_bracket = 0
                 open_index = -1
         else:
             if open_index == -1:
                 result.append(token)
-        
+
         i += 1
 
+    if open_bracket != 0 and open_index != -1:
+        raise Exception("ill formed expression: missing closed brackets")
+
     return result
+
 
 if __name__ == "__main__":
     # good form
@@ -67,7 +72,13 @@ if __name__ == "__main__":
     # print(reader(test4))
     # assert reader(test4) == [[["a"]], ["b"], "c"]
 
-    test5 = ["[", "]"]
-    assert reader(test5) == []
+    # test5 = ["[", "]"]
+    # assert reader(test5) == []
+
+    test6 = ["[", "this", "is", "[", "a", "]", "[", "[", "list", "]", "]", "]"]
+    print(reader(test6))
+    assert reader(test6) == ["this", "is", ["a"], [["list"]]]
 
     # ill formed
+    test7 = ["[", "this", "is", "[", "a", "]", "[", "[", "list", "]", "]"]
+    assert reader(test6) != ["this", "is", ["a"], [["list"]]]
