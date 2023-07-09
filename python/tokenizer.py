@@ -8,7 +8,7 @@ def tokenizer(input: str) -> List[str]:
 
     for char in input:
         match char:
-            case "(" | ")" | "[" | "]":
+            case "(" | ")":
                 if len(builder) > 0:
                     tokens.append(builder)
                 # reset builder to empty string
@@ -32,6 +32,6 @@ if __name__ == "__main__":
     assert tokenizer(test1) == ["(", "1", "2", "3", "4", ")"]
 
     test2 = """(this    is a
-            3.14 
-            (test))"""
+        3.14 
+        (test))"""
     assert tokenizer(test2) == ["(", "this", "is", "a", "3.14", "(", "test", ")", ")"]
