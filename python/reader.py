@@ -77,10 +77,13 @@ if __name__ == "__main__":
     # test5 = ["[", "]"]
     # assert reader(test5) == []
 
-    test6 = ["[", "this", "is", "[", "a", "]", "[", "[", "list", "]", "]", "]"]
-    print(reader(test6))
-    assert reader(test6) == ["this", "is", ["a"], [["list"]]]
+    # test6 = ["[", "this", "is", "[", "a", "]", "[", "[", "list", "]", "]", "]"]
+    # print(reader(test6))
+    # assert reader(test6) == ["this", "is", ["a"], [["list"]]]
+
+    test8 = ["[", "a", "[", "[", "b", "c", "]", "[", "d", "e", "]", "]", "]"]
+    assert reader(test8) == ["a", [["b", "c"], ["d", "e"]]]
 
     # ill formed
-    test7 = ["[", "this", "is", "[", "a", "]", "[", "[", "list", "]", "]"]
-    assert reader(test6) != ["this", "is", ["a"], [["list"]]]
+    # test7 = ["[", "this", "is", "[", "a", "]", "[", "[", "list", "]", "]"]
+    # assert reader(test6) != ["this", "is", ["a"], [["list"]]]
