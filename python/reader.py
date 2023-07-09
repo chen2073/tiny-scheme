@@ -26,29 +26,31 @@ def reader(tokens: List[str]) -> List[str]:
 
     result = []
     i = 0
+    # count the number of nested brackets
     open_bracket = 0
-    open_index = -1
+    # first nested open bracket location/index
+    open_index = None
 
     while i < len(tokens):
         token = tokens[i]
         if token == "[":
             open_bracket += 1
-            if open_index == -1:
+            if open_index == None:
                 open_index = i
         elif token == "]":
             open_bracket -= 1
-            if open_bracket == 0 and open_index != -1:
+            if open_bracket == 0 and open_index != None:
                 nested_read = reader(tokens[open_index : i + 1])
                 result.append(nested_read)
                 open_bracket = 0
-                open_index = -1
+                open_index = None
         else:
-            if open_index == -1:
+            if open_index == None:
                 result.append(token)
 
         i += 1
 
-    if open_bracket != 0 and open_index != -1:
+    if open_bracket != 0 or open_index != None:
         raise Exception("ill formed expression: missing closed brackets")
 
     return result
