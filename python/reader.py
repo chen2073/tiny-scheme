@@ -82,6 +82,7 @@ if __name__ == "__main__":
     test8 = ["(", "a", "(", "(", "b", "c", ")", "(", "d", "e", ")", ")", ")"]
     assert reader(test8) == ["a", [["b", "c"], ["d", "e"]]]
 
+    print(reader(["1"]))
     # ill formed
     # test7 = ["(", "this", "is", "(", "a", ")", "(", "(", "list", ")", ")"]
     # assert reader(test6) != ["this", "is", ["a"], [["list"]]]
