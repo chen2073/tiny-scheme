@@ -63,13 +63,43 @@ def reader(tokens: List[str]) -> RecursiveList:
 
     return stack
 
+EmptyList = "()"
+
+def cons(item1, item2):
+    return [item1, item2]
+
+def car(exp):
+    return exp[0]
+
+def cdr(exp):
+    return exp[1]
+
+def cadr(exp):
+    return exp[1][0]
+
+def cddr(exp):
+    return exp[1][1]
+
+def caddr(exp):
+    return exp[1][1][0]
+
+def SList(*args):
+    if len(args) <= 1:
+        return cons(args[0], EmptyList)
+    arg, *args = args
+    return cons(arg, SList(*args))
+
+# def parser(reader_expr) -> :
+#     return Ast
+
 if __name__ == "__main__":
-    c1 = """(this    is a
-    3.14 
-    (test))"""
+    # c1 = """(this    is a
+    # 3.14 
+    # (test))"""
     # re = tokenizer(c1)
     # print(re)
 
-    c2 = "(this is (a) ((list test 1.2)))"
-    re = reader(tokenizer(c2))
-    print(re)
+    # c2 = "(this is (a) ((list test 1.2)))"
+    # re = reader(tokenizer(c2))
+    # print(re)
+    print(SList(1, 2, 3, 4))
