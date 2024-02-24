@@ -1,159 +1,123 @@
-def tokenizer(string):
-    retval = []
-    current = ""
-    for i in range(len(string)):
-        if string[i] in ["(", "[", ")", "]"]:
-            if current:
-                retval.append(current)
-            current = ""
-            retval.append(string[i])
-        elif string[i] in [" ", "\t", "\n"]:
-            if current:
-                retval.append(current)
-            current = ""
-        else:
-            current += string[i]
-    if current:
-        retval.append(current)
-    return retval
+from typing import List, Literal, TypeVar, Any
 
-def tokenizer1(string):
+class SyntaxToken:
+    def __init__(self, val: Literal["(", ")"]) -> None:
+        self.kind = "SyntaxToken"
+        self.val: str = val
+    def __repr__(self) -> str:
+        return self.val
+
+# "define", "+", "-", "*", "/"
+class SymbolToken:
+    def __init__(self, val: str) -> None:
+        self.kind = "SymbolToken"
+        self.val: str = val
+    def __repr__(self) -> str:
+        return self.val
+
+class BooleanToken:
+    def __init__(self, val: str) -> None:
+        self.kind = "BooleanToken"
+        self.val: bool = val
+    def __repr__(self) -> str:
+        return str(self.val)
+
+class IntegerToken:
+    def __init__(self, val: str) -> None:
+        self.kind = "IntegerToken"
+        self.val: int = val
+    def __repr__(self) -> str:
+        return str(self.val)
+
+# parse source string into token string
+def tokenizer(source_string: str) -> List[str]:
+    tokens = []
+    builder = ""
+    for i in range(0, len(source_string)):
+        if source_string[i] in ["(", ")"]:
+            if builder:
+                tokens.append(builder)
+            tokens.append(source_string[i])
+            builder = ""
+        elif source_string[i] in [" ", "\t", "\n"]:
+            if builder:
+                tokens.append(builder)
+            builder = ""
+        else:
+            builder += source_string[i]
+    
+    if builder:
+        tokens.append(builder)
+    
+    return tokens
+
+Token = IntegerToken | BooleanToken | SymbolToken | SyntaxToken
+
+# parse token string into token type
+def reader(tokens: List[str]) -> List[Token]:
+    convert_tokens = []
+    for token_string in tokens:
+        if token_string.isdigit():
+            token = IntegerToken(int(token_string))
+            convert_tokens.append(token)
+        elif token_string in ["(", ")"]:
+            token = SyntaxToken(token_string)
+            convert_tokens.append(token)
+        elif token_string in ["#t", "#f"]:
+            token = BooleanToken(True if token == "#t" else False)
+            convert_tokens.append(token)
+        else:
+            token = SyntaxToken(token_string)
+            convert_tokens.append(token)
+    return convert_tokens
+
+lexer = lambda source_string: reader(tokenizer(source_string))
+
+class SingletonExpression:
     pass
 
-def reader(texp):
-    current = None
+class ApplyExpression:
+    pass
+
+AST = Token | List[Token] | TypeVar("AST")
+
+# (+ (+ 3 4) (+ 11 12))
+
+# parse token to AST
+def parser(tokens: Token | List[Token]) -> AST:
+    if not isinstance(tokens, list):
+        return tokens
+    
+    ast = []
     stack = []
-    for item in texp:
-        if item.isdigit():
-            if current is not None:
-                current.append(eval(item))
-            else:
-                current = eval(item)
-        elif item in ["[", "("]:
-            if current is not None:
-                stack.append(current)
-            current = []
-        elif item in ["]", ")"]:
-            if stack:
-                stack[-1].append(current)
-                current = stack.pop(-1)
-            else:
-                pass
+
+    for token in tokens:
+        if token.val == "(":
+            if len(stack) > 0:
+                if len(ast) <= 0:
+                    ast.extend(stack)
+                else:
+                    ast.append(stack)
+            stack = []
+        elif token.val == ")":
+            if len(stack) > 0:
+                if len(ast) <= 0:
+                    ast.extend(stack)
+                else:
+                    ast.append(stack)
+            stack = []
         else:
-            if current is not None:
-                current.append(item)
-            else:
-                current = item
-    return current
+            stack.append(token)
 
-EmptyList = "()"
+    return ast
 
-def cons(item1, item2):
-    return [item1, item2]
+def interpret(ast: AST) -> Any:
 
-def car(exp):
-    return exp[0]
 
-def cdr(exp):
-    return exp[1]
+t1 = "(+ (+ 3 4) (+ 11 12))"
+t2 = "(+ 1 2)"
+t3 = "(+ 1 (+ 2 3))"
+t4 = "(+ (+ 2 3) 1)"
 
-def cadr(exp):
-    return exp[1][0]
-
-def cddr(exp):
-    return exp[1][1]
-
-def caddr(exp):
-    return exp[1][1][0]
-
-def List(*args):
-    "Create a linked-list of items"
-    retval = EmptyList
-    for arg in reversed(args):
-        retval = cons(arg, retval)
-    return retval
-
-def List2(*args):
-    if len(args) <= 0:
-        return EmptyList
-    return cons(args[0], *args[1:])
-
-def lit_exp(value):
-    return List("lit-exp", value)
-
-def var_exp(symbol):
-    return List("var-exp", symbol)
-
-def app_exp(f, args):
-    return List("apply-exp", f, args)
-
-def parser(rexp):
-    if isinstance(rexp, int):
-        return lit_exp(rexp)
-    elif isinstance(rexp, str):
-        return var_exp(rexp)
-    else:
-        return app_exp(parser(rexp[0]), List(*map(parser, rexp[1:])))
-    
-def scalc_parse(string):
-    return parser(reader(tokenizer(string)))
-
-def evaluator(expr):
-    if car(expr) == "lit-exp":
-        return cadr(expr)
-    elif car(expr) == "var-exp":
-        return cadr(expr) ## for now, return symbol
-    elif car(expr) == "apply-exp":
-        return evaluator_apply(evaluator(cadr(expr)), Map(evaluator, caddr(expr)))
-    else:
-        raise Exception("invalid ast: %s" % expr)
-
-def evaluator_apply(op, operands):
-    if op == "print":
-        Print(operands)
-    if op == "+":
-        return car(operands) + cadr(operands)
-    if op == "-":
-        return car(operands) - cadr(operands)
-    if op == "*":
-        return car(operands) * cadr(operands)
-    if op == "//":
-        return car(operands) // cadr(operands)
-    else:
-        raise Exception("unknown apply operator: %s" % op)
-        
-def Map(f, slist):
-    if slist == EmptyList:
-        return EmptyList
-    else:
-        return cons( f(car(slist)), Map(f, cdr(slist))) ## recursive!
-    
-def Print(slist):
-    if slist == EmptyList:
-        return
-    else:
-        print(car(slist))
-        Print(cdr(slist))
-
-def scalc(string):
-    return evaluator(scalc_parse(string))
-
-if __name__ == "__main__":
-    # re = parser(reader(tokenizer("1")))
-    # print(re)
-    # re = parser(reader(tokenizer("(+ 1 2)")))
-    # print(re)
-    # re = scalc_parse("652362")
-    # print(re)
-    # re = scalc("(print 1 2 3)")
-    # print(re)
-    re = scalc("(+ 1 2)")
-    print(re)
-    re = scalc("(- 1 2)")
-    print(re)
-    re = scalc("(* 1 2)")
-    print(re)
-    re = scalc("(// 1 2)")
-    print(re)
-    re = scalc("(// 1 0)")
-    print(re)
+re = parser(lexer(t4))
+print(re)
